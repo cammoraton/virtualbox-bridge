@@ -151,22 +151,25 @@ test_ansible: virtualenv
 # Test everything
 .PHONY: test
 test: test_ansible test_inspec $(VAGRANT_MACHINE_NAME).box
-	vagrant up || /bin/true
-	@echo ./env/bin/ansible \
+	vagrant up
+	./env/bin/ansible-playbook \
 	  --user=vagrant \
 	  -e "host_key_checking=False" \
-		-e "ansible_ssh_common_args='-o StrictHostKeyChecking=no'" \
-		-e "ansible_ssh_port=`vagrant ssh-config | grep Port | awk '{print $$2}'`" \
-		--private-key=`vagrant ssh-config | grep IdentityFile | awk '{print $$2}'` \
-		-inventory=localhost:`vagrant ssh-config | grep Port | awk '{print $$2}'` \
-		--become \
-		./ansible/$(ANSIBLE_PLAYBOOK);
-	@echo GEM_PATH=./vendor ./vendor/bin/bundler exec inspec exec \
-	  --port="ansible_ssh_port=`vagrant ssh-config | grep Port | awk '{print $$2}'`" \
-		--user=vagrant \
-		--password=vagrant \
-		--sudo \
-		./inspec
+	  -e "ansible_ssh_common_args='-o StrictHostKeyChecking=no'" \
+	  -e "ansible_ssh_port=`vagrant ssh-config | grep Port | awk '{print $$2}'`" \
+	  -e "ansible_become_password=vagrant" \
+	  --private-key=`vagrant ssh-config | grep IdentityFile | awk '{print $$2}'` \
+	  -i localhost:`vagrant ssh-config | grep Port | awk '{print $$2}'`, \
+	  --become \
+	  ./ansible/$(ANSIBLE_PLAYBOOK)
+	GEM_PATH=./vendor ./vendor/bin/bundler exec inspec exec \
+	  --port=`vagrant ssh-config | grep Port | awk '{print $$2}'` \
+	  --user=vagrant \
+	  --password=vagrant \
+	  --backend=ssh \
+	  --host=localhost \
+	  --sudo \
+	  ./inspec
 	vagrant destroy -f
 
 ###################################################
@@ -179,7 +182,7 @@ reset:
 
 # Reset the vagrant box between tests
 .PHONY: rebuild
-reset:
+rebuild:
 	rm -rf *.box
 
 # Clean all the things!
