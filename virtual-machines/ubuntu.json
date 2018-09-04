@@ -1,0 +1,98 @@
+{
+  "variables": {
+    "iso_url": "http://cdimage.ubuntu.com/releases/18.04.1/release/ubuntu-18.04.1-server-amd64.iso",
+    "iso_checksum": "a5b0ea5918f850124f3d72ef4b85bda82f0fcd02ec721be19c1a6952791c8ee8",
+    "iso_checksum_type": "sha256",
+    "vbox_guest_os": "Ubuntu_64",
+    "os_family": "ubuntu",
+    "os_release": "bionic",
+    "preseed": "preseed.cfg",
+    "vm_name": "puppet-ubuntu-bionic-x64",
+    "http_directory": "www",
+    "scripts_directory": "scripts",
+    "install_docker": "",
+    "docker_version": "",
+    "apt_docker_version": "",
+    "yum_docker_version": ""
+  },
+  "builders": [
+    {
+    "type": "virtualbox-iso",
+    "guest_os_type": "{{user `vbox_guest_os`}}",
+    "iso_url": "{{user `iso_url`}}",
+    "iso_checksum": "{{user `iso_checksum`}}",
+    "iso_checksum_type": "{{user `iso_checksum_type`}}",
+    "disk_size" : "{{user `disk`}}",
+    "http_directory": "{{ user `http_directory` }}",
+    "boot_command": [
+        "<esc><wait>",
+        "<esc><wait>",
+        "<enter><wait>",
+        "/install/vmlinuz <wait>",
+        "auto <wait>",
+        "biosdevname=0 net.ifnames=0 <wait>",
+        "console-setup/ask_detect=false <wait>",
+        "console-setup/layoutcode=us <wait>",
+        "console-setup/modelcode=pc105 <wait>",
+        "debconf/frontend=noninteractive <wait>",
+        "debian-installer=en_US <wait>",
+        "fb=false <wait>",
+        "initrd=/install/initrd.gz <wait>",
+        "kbd-chooser/method=us <wait>",
+        "keyboard-configuration/layout=USA <wait>",
+        "keyboard-configuration/variant=USA <wait>",
+        "locale=en_US <wait>",
+        "netcfg/get_hostname={{user `hostname`}} <wait>",
+        "netcfg/get_domain=example.com <wait>",
+        "netcfg/do_not_use_netplan=true <wait>",
+        "noapic <wait>",
+        "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `preseed`}} <wait>",
+        "-- <wait>",
+        "<enter><wait>"
+      ],
+      "boot_wait": "10s",
+      "ssh_username": "{{user `ssh_username`}}",
+      "ssh_password": "{{user `ssh_password`}}",
+      "ssh_port": 22,
+      "ssh_wait_timeout": "10000s",
+      "shutdown_command": "echo 'shutdown -P now' > /tmp/shutdown.sh; echo '{{user `ssh_password`}}'| sudo -S sh '/tmp/shutdown.sh'",
+      "vboxmanage": [
+        [ "modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}" ],
+        [ "modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}" ]
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "direction": "upload",
+      "source": "{{ user `scripts_directory` }}",
+      "destination": "{{ user `scripts_destination` }}"
+    },
+    {
+      "type": "shell",
+      "environment_vars": [
+        "OS_FAMILY={{ user `os_family` }}",
+        "SCRIPT_DIR={{ user `scripts_destination` }}",
+        "INSTALL_DOCKER={{ user `install_docker` }}",
+        "YUM_DOCKER_VERSION={{ user `yum_docker_version` }}",
+        "APT_DOCKER_VERSION={{ user `apt_docker_version` }}"
+      ],
+      "execute_command": "echo '{{user `ssh_password`}}'|sudo -S sh -c '{{ .Vars }} {{ .Path }}'",
+      "scripts": [
+        "{{ user `scripts_directory` }}/bootstrap.sh",
+        "{{ user `scripts_directory` }}/cleanup.sh"
+      ]
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "override": {
+        "virtualbox": {
+          "output": "{{user `vm_name`}}.box"
+        }
+      }
+    }
+  ]
+}

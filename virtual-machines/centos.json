@@ -1,0 +1,74 @@
+{
+  "variables": {
+    "iso_url": "http://mirror.umd.edu/centos/7/isos/x86_64/CentOS-7-x86_64-NetInstall-1804.iso",
+    "iso_checksum": "937bf0a7b0932817f84f7230f15ed88911bbbd85c0c958680792b7f8d8f9c1a9",
+    "iso_checksum_type": "sha256",
+    "vbox_guest_os": "RedHat_64",
+    "os_family": "centos",
+    "os_release": "7.2",
+    "kickstart": "maipo.ks",
+    "vm_name":  "puppet-centos-7.2-x64",
+    "http_directory": "www",
+    "scripts_directory": "scripts",
+    "install_docker": "",
+    "apt_docker_version": "",
+    "yum_docker_version": ""
+  },
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "guest_os_type": "{{user `vbox_guest_os`}}",
+      "iso_url": "{{user `iso_url`}}",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_checksum_type": "{{user `iso_checksum_type`}}",
+      "disk_size" : "{{user `disk`}}",
+      "http_directory": "{{ user `http_directory` }}",
+      "boot_command": [
+        "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `kickstart`}}<enter><wait>"
+      ],
+      "boot_wait": "10s",
+      "ssh_username": "{{user `ssh_username`}}",
+      "ssh_password": "{{user `ssh_password`}}",
+      "ssh_port": 22,
+      "ssh_wait_timeout": "10000s",
+      "shutdown_command": "echo 'shutdown -P now' > /tmp/shutdown.sh; echo '{{user `ssh_password`}}'|sudo -S sh '/tmp/shutdown.sh'",
+      "vboxmanage": [
+        [ "modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}" ],
+        [ "modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}" ]
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "direction": "upload",
+      "source": "{{ user `scripts_directory` }}",
+      "destination": "{{ user `scripts_destination` }}"
+    },
+    {
+      "type": "shell",
+      "environment_vars": [
+        "OS_FAMILY={{ user `os_family` }}",
+        "SCRIPT_DIR={{ user `scripts_destination` }}",
+        "INSTALL_DOCKER={{ user `install_docker` }}",
+        "YUM_DOCKER_VERSION={{ user `yum_docker_version` }}",
+        "APT_DOCKER_VERSION={{ user `apt_docker_version` }}"
+      ],
+      "execute_command": "echo '{{user `ssh_password`}}'|sudo -S sh -c '{{ .Vars }} {{ .Path }}'",
+      "scripts": [
+        "{{ user `scripts_directory` }}/bootstrap.sh",
+        "{{ user `scripts_directory` }}/cleanup.sh"
+      ]
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "override": {
+        "virtualbox": {
+          "output": "{{ user `vm_name` }}.box"
+        }
+      }
+    }
+  ]
+}

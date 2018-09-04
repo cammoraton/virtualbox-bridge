@@ -1,0 +1,2 @@
+FROM ubuntu:bionic
+# TODO: Put universal things here

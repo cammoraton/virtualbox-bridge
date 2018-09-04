@@ -1,0 +1,14 @@
+env/
+vendor/
+packer_cache/
+virtual-machines/packer_cache/
+output-virtualbox-iso/
+virtual-machines/output-virtualbox-iso/
+.bundle/
+inspec/vendor
+inspec/inspec.lock
+Gemfile.lock
+tmp/
+virtual-machines/*.box
+*.box
+.vagrant/

@@ -1,0 +1,10 @@
+{
+  "ssh_username": "vagrant",
+  "ssh_password": "vagrant",
+  "scripts_destination": "/tmp/provision",
+  "hostname": "localhost",
+  "arch": "x64",
+  "memory": "2048",
+  "cpus": "1",
+  "disk": "10240"
+}
