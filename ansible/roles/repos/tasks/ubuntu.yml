@@ -1,0 +1,12 @@
+- name: install PC1 Repository
+  apt_repository:
+    repo: deb http://apt.puppetlabs.com {{ ansible_distribution_release }} PC1
+    state: present
+    filename: puppetlabs-pc1
+- name: add PC1 GPG Key
+  apt_key:
+    data: "{{ lookup('file', 'DEB-GPG-KEY-puppet') }}"
+    state: present
+- name: "apt-get update"
+  apt:
+    update_cache: yes

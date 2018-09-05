@@ -27,11 +27,6 @@ rm -rf ${SCRIPT_DIR}
 set +x
 ##### BACK TO UNIVERSAL THINGS #####
 
-(>&2 echo "Removing man pages...")
-set -x
-rm -rf /usr/share/man/*
-set +x
-
 (>&2 echo "Clearing any core files...")
 set -x
 rm -rf /core/*

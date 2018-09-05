@@ -1,0 +1,13 @@
+- include: centos.yml
+  when: ansible_distribution == "CentOS"
+- include: ubuntu.yml
+  when: ansible_distribution == "Ubuntu"
+- name: Enable puppetserver service
+  service:
+    name: puppetserver
+    enabled: yes
+# Configure
+- name: Start puppetserver service
+  service:
+    name: puppetserver
+    state: started

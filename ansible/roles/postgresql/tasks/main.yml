@@ -1,0 +1,13 @@
+- include: centos.yml
+  when: ansible_distribution == "CentOS"
+- include: ubuntu.yml
+  when: ansible_distribution == "Ubuntu"
+- name: Enable postgresql service
+  service:
+    name: postgresql
+    enabled: yes
+# Configure
+- name: Start postgresql  service
+  service:
+    name: postgresql
+    state: started

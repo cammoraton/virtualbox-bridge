@@ -1,6 +1,6 @@
 One last huzzah for Makefiles and the Hashicorp VM stack.
 
-Tests puppet immutable infrastructure
+A bridge to immutable infrastructure. Still a work in progress.
 
 # Contents
 
@@ -15,7 +15,7 @@ Prerequisites:
 * Vagrant - used to instantiate VMs and test
 * Docker - required to build and run containers
 * Python and Python-virtualenv - required for ansible
-* Ruby and Rubygems - required for inspec
+* Ruby and Rubygems - required for inspec - 2.3+
 
 Prerequisites are loosely validated in the Makefile via a set of validate shell scripts stored in `scripts/validate_*.sh`. These check for the existence of commands in your path and will notify you on error. They can be executed via the `validate` makefile target by running `make validate`.
 
